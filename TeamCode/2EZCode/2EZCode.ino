@@ -9,10 +9,25 @@ Servo servo;
 Pixy2 pixy; 
 // Adafruit_BNO055 bno = Adafruit_BNO055(55);
 
-int motor=2;
-int leftUltra=4;
-int rightUltra=5;
-int frontUltra=6;   
+const int motor=2;
+const int leftUltra=4;
+const int rightUltra=5;
+const int frontUltra=6;   
+
+const int greenSig=1;
+const int redSig=2;
+
+const int x=0;
+const int y=1;
+const int width=2;
+const int height=3;
+const int age=4;
+
+int[] greenStuff=new int[5];
+int[] redStuff=new int[5];
+bool twoReads;
+
+
 
 // int 
 
@@ -30,41 +45,56 @@ void setup() {
 }
 
 void loop() {
-  int i;
+  read();
 
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+}
+
+static void read() 
+{
   pixy.ccc.getBlocks();
   if (pixy.ccc.numBlocks)
   {
-    Serial.print("Sig  ");
-    Serial.print(pixy.ccc.blocks[0].m_signature);
-    Serial.print("  x ");
-    Serial.print(pixy.ccc.blocks[0].m_x);
-    Serial.print("  y ");
-    Serial.print(pixy.ccc.blocks[0].m_y);
-    Serial.print("  wid ");
-    Serial.print(pixy.ccc.blocks[0].m_width);
-    Serial.print("  hei ");
-    Serial.print(pixy.ccc.blocks[0].m_height);
-    Serial.print("  angle ");
-    Serial.print(pixy.ccc.blocks[0].m_angle);
-    Serial.print("  index ");
-    Serial.print(pixy.ccc.blocks[0].m_index);
-    Serial.print("  age ");
-    Serial.println(pixy.ccc.blocks[0].m_age);
+    if ((pixy.ccc.blocks[0].m_signature)==greenSig){
+      getBulkValue(greenStuff,0)
+    };
+    if ((pixy.ccc.blocks[0].m_signature)==redSig){
+      getBulkValue(redStuff,0)
+    };
+
     if (pixy.ccc.numBlocks>1) {
-      Serial.print(pixy.ccc.blocks[1].m_signature);
-      Serial.print(pixy.ccc.blocks[1].m_x);
-      Serial.print(pixy.ccc.blocks[1].m_y);
-      Serial.print(pixy.ccc.blocks[1].m_width);
-      Serial.print(pixy.ccc.blocks[1].m_height);
-      Serial.print(pixy.ccc.blocks[1].m_angle);
-      Serial.print(pixy.ccc.blocks[1].m_index);
-      Serial.println(pixy.ccc.blocks[1].m_age);
-    }
-  
-    
-     
+      twoReads=true;
+      if ((pixy.ccc.blocks[1].m_signature)==greenSig){
+        getBulkValue(greenStuff,1)
+      };
+      if ((pixy.ccc.blocks[1].m_signature)==redSig){
+        getBulkValue(redStuff,1)
+      };
+    }  
+    else{
+      twoReads=false;
+    } 
   }
-  
-  delay(500);
+}
+
+static void getBulkValue(int[] sigArr, int index) 
+{
+    sigArr[x]=pixy.ccc.blocks[index].m_x);
+    sigArr[y]=pixy.ccc.blocks[index].m_y);
+    sigArr[width]=pixy.ccc.blocks[index].m_width);
+    sigArr[height]=pixy.ccc.blocks[index].m_height);
+    sigArr[age]=pixy.ccc.blocks[index].m_age);
 }
