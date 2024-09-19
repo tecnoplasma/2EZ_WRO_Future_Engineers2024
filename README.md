@@ -9,7 +9,7 @@ Members :
 
 # Project/bot description :
 
-Our bot, made of MDF(Medium Density Fibreboard) weighs in at around ____ kg and its dimensions are ___x___x___. 
+Our bot, made of 3D printed shapes from PLA filament, it weighs in at around ____ kg and its dimensions are ___x___x___. 
 
 # Table of contents :
  - [team-photos](#team-photos) which contains ___ photos (_ formal and _ informal) with every team member
