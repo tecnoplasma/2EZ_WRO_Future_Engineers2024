@@ -3,7 +3,7 @@ This repository contains a set of work curated by the WRO Future Engineer's fine
 
 Members : 
  - Neev Gupta
- - Aryan ____
+ - Aryan Shah
  - Divish Bhagtani
 
 
