@@ -18,3 +18,5 @@ Our bot, made of 3D printed shapes from PLA filament, it weighs in at around ___
  - [Materials and components](#Materials-and-components) contains all of the names and amount of all the components and hardware used to make our bot
 
 # Introduction
+
+Meet our exceptional team of three, ready to take on the World Robot Olympiad (WRO) with our cutting-edge self-automated bot. Driven by creativity and technical expertise, we’ve crafted a machine that embodies innovation and efficiency. Each team member brings a unique set of skills : engineering, programming, and strategy. Allowing us to tackle challenges with precision and teamwork. We’re excited to push the boundaries of robotics and showcase our hard work and passion on this global stage!
