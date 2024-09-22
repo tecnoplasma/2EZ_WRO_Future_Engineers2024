@@ -5,5 +5,5 @@
 | 1 | motor driver tb6612fng | ![icon](https://github.com/tecnoplasma/2EZ/blob/309c97cdf103ebb51d19785987fa10b4b8af9e70/download.jpg) |
 | 1 | 3s 11.1v lipo battery | ![icon](https://github.com/tecnoplasma/2EZ/blob/b5a4222b4520dd244ac2ddbe63f7864c81437fbe/SPMX8003SJ50_A0_TB42ZUIQ.jpg) |
 | 1 | electrical switch | ![icon](https://github.com/tecnoplasma/2EZ/blob/8b21a62cdd35be2e3952e2918667d207fb66c1bd/Rocker-Switches.jpg) |
-| 1 | Pixy 2 camera | ![icon]() |
+| 1 | Pixy 2 camera | ![icon](https://github.com/tecnoplasma/2EZ/blob/537f65b4290382ada7869380bce83f3061761603/Pixy-2.jpg) |
 
