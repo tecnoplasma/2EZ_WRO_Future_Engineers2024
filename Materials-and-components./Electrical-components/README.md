@@ -1,1 +1,2 @@
-| Amount | Product |  |
+| Amount | Product | photo |
+| --- | --- | --- |
