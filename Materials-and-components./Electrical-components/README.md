@@ -7,4 +7,5 @@
 | 1 | electrical switch | ![icon](https://github.com/tecnoplasma/2EZ/blob/8b21a62cdd35be2e3952e2918667d207fb66c1bd/Rocker-Switches.jpg) |
 | 1 | Pixy 2 camera | ![icon](https://github.com/tecnoplasma/2EZ/blob/537f65b4290382ada7869380bce83f3061761603/Pixy-2.jpg) |
 | 1 | servo motor mg90s | ![icon](https://github.com/tecnoplasma/2EZ/blob/06445c54705181d96bdb62996eefc3bf0d14187a/mg90s-mini-metal-geared-micro-servo-motor-500x500.jpg) |
+| 1 | dc motor n20 | ![icon](https://github.com/tecnoplasma/2EZ/blob/ddbbb1fa33dcf0ebb49ce9af5843378cf293f8c0/download%20(1).jpg) |
 
