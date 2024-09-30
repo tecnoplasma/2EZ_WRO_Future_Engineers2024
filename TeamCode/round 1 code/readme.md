@@ -80,6 +80,13 @@ The distCalcAVG() function (not currently used) would average multiple distance 
 Flow Chart of Actions
 Here’s the detailed flowchart that outlines the actions my bot will take based on the code logic:
 
+```mermaid
+graph TD;
+    Start-->Initialize sensors, servo, motors;
+    A-->C;
+    B-->D;
+    C-->D;
+```
 sql
 Copy code
 +-------------------+
