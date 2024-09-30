@@ -77,3 +77,71 @@ If the distance is out of reasonable bounds (greater than 150 cm or less than 0)
 Averaging Function (commented out):
 
 The distCalcAVG() function (not currently used) would average multiple distance readings for better reliability. It runs a loop to take several measurements and calculates the average distance.
+
++-------------------+
+| Start             |
++-------------------+
+        |
+        v
++-------------------+
+| Initialize Sensors |
+| Initialize Servo   |
+| Initialize Motors  |
++-------------------+
+        |
+        v
++-------------------+
+| Move Forward      |
++-------------------+
+        |
+        v
++--------------------------+
+| Measure Front Distance   |
++--------------------------+
+        |
+        v
++--------------------------+
+| Is Distance < Threshold? |
++--------------------------+
+        |         |
+      Yes         No
+        |          |
+        v          v
++-------------------+       +-------------------+
+| Measure Right     |       | Continue Forward  |
+| and Left Distances|       +-------------------+
++-------------------+
+        |
+        v
++---------------------------+
+| Is Right Distance > Left?|
++---------------------------+
+        |         |
+      Yes         No
+        |          |
+        v          v
++-------------------+    +-------------------+
+| Turn Right        |    | Turn Left         |
++-------------------+    +-------------------+
+        |
+        v
++-------------------+
+| Check Current     |
+| Heading           |
++-------------------+
+        |
+        v
++-------------------+
+| Has Turn Completed?|
++-------------------+
+        |
+        v
++-------------------+
+| Update Turns      |
++-------------------+
+        |
+        v
++-------------------+
+| Loop Back to Move |
+| Forward           |
++-------------------+
