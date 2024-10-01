@@ -78,4 +78,4 @@ Averaging Function (commented out):
 
 The distCalcAVG() function (not currently used) would average multiple distance readings for better reliability. It runs a loop to take several measurements and calculates the average distance.
 
-![Icon]()
+![Icon](https://github.com/tecnoplasma/2EZ/blob/77ed19f3b2dcfc9a7587c0bad67232a2a57ee0c0/flow%20chart%20for%20first%20round.jpg)
