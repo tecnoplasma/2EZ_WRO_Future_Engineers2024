@@ -12,10 +12,13 @@ Members :
 Our bot, made of 3D printed shapes from PLA filament, it weighs in at around ____ kg and its dimensions are ___x___x___. 
 
 # Table of contents :
- - [team-photos](#team-photos) which contains ___ photos (_ formal and _ informal) with every team member
+ - [team-photos] which contains ___ photos (_ formal and _ informal) with every team member
  - bot-photos which contains 6 photos of the bot (front, back, right, left, top and bottom)
  - diagrams which contains schemes and visual representation of the electrical components individually as well as how they interconnect with one an other in the bot
- - [Materials and components](#Materials-and-components) contains all of the names and amount of all the components and hardware used to make our bot
+ - [Materials and components] contains all of the names and amount of all the components and hardware used to make our bot
+ - 3D models has all the CAD files as well as an animated video of the construction of our bot
+ - Reference documents is filled with written reports/documents/manuals all about our bot and its logistics
+ - TeamCode has all of the code for our bot along with explainations for the code of each round
 
 # Introduction
 
