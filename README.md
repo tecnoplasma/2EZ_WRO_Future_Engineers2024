@@ -9,7 +9,7 @@ Members :
 
 # Project/bot description :
 
-Our bot, made of 3D printed shapes from PLA filament, it weighs in at around 1.4 kg and its dimensions are ___x___x___. 
+Our bot, made of 3D printed shapes from PLA filament, weighs in at around 1.4 kg and is ready to take on the WRO challenge for this year. It consists of 1 pixy camera v2, 3 ultrasonic sensors, one arduino uno rev3, 2 buck converters and other components. The bot has a menacing skull design and is made in bright orange with cyan blue highlights.
 
 # Table of contents :
  - team-photos : which contains 2 photos (1 formal and 1 informal) with every team member
