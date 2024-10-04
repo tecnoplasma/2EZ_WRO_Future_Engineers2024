@@ -11,4 +11,4 @@
 | 1 | IMU BNO055 | ![icon](https://github.com/tecnoplasma/2EZ/blob/21bd2308e062dbe802be50981914d418cc3d87fb/51qEXrfKgTL._AC_UF1000%2C1000_QL80_.jpg) |
 | 2 | lm2596 buck converter | ![icon](https://github.com/tecnoplasma/2EZ/blob/dbf74b74393c21e71fe04ec1981492bfead1d781/61Rn2dXAoWL.jpg) |
 | 9 | Neo Pixel lights | ![icon](https://github.com/tecnoplasma/2EZ/blob/02189fe0705cd752ce56992d37177d523c20ca83/Screenshot%202024-10-04%20183006.png) |
-| 1 | push button | ![icon]() |
+| 1 | push button | ![icon](https://github.com/tecnoplasma/2EZ/blob/3b6e817f4cb4545c07b369fdd6e9137e9d96a483/Screenshot%202024-10-04%20183148.png) |
