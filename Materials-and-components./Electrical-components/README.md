@@ -10,5 +10,5 @@
 | 1 | dc motor n20 | ![icon](https://github.com/tecnoplasma/2EZ/blob/ddbbb1fa33dcf0ebb49ce9af5843378cf293f8c0/download%20(1).jpg) |
 | 1 | IMU BNO055 | ![icon](https://github.com/tecnoplasma/2EZ/blob/21bd2308e062dbe802be50981914d418cc3d87fb/51qEXrfKgTL._AC_UF1000%2C1000_QL80_.jpg) |
 | 2 | lm2596 buck converter | ![icon](https://github.com/tecnoplasma/2EZ/blob/dbf74b74393c21e71fe04ec1981492bfead1d781/61Rn2dXAoWL.jpg) |
-| 9 | Neo Pixel lights | ![icon]() |
+| 9 | Neo Pixel lights | ![icon](https://github.com/tecnoplasma/2EZ/blob/02189fe0705cd752ce56992d37177d523c20ca83/Screenshot%202024-10-04%20183006.png) |
 | 1 | push button | ![icon]() |
