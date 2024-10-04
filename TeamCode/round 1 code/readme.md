@@ -41,7 +41,7 @@ Loop Function:
 The loop() function contains the core logic for vehicle operation:
 Forward Movement: The vehicle starts moving forward.
 Distance Measurement: I call the distCalc() function to get the distance from the front ultrasonic sensor.
-Obstacle Detection: If the distance measured is below a certain threshold (forntthreshold):
+Wall Detection: If the distance measured is below a certain threshold (forntthreshold):
 I measure the distances from the right and left sensors.
 Based on the readings, I determine the turn direction:
 If the right distance is sufficient, I set the mode to 'r' (turn right).
