@@ -40,9 +40,9 @@ float fd;
 int avg = 0;
 int sample = 3;
 int read;
-int forntthreshold = 80;
-int leftthreshold = 70;  //100 if no surprise //70 if there is
-int rightthreshold = 70; //100 if no surprise //70 if there is
+int forntthreshold = 100;
+int leftthreshold = 100;  //100 if no surprise //70 if there is
+int rightthreshold = 100; //100 if no surprise //70 if there is
 
 float previousError = 0;
 float integral = 0;
@@ -55,13 +55,13 @@ float derivative = 0;
 float steeringAdjustment = 0;
 int newServoPosition = 0;
 char mode = 's';
-int deviate = 15;
+int deviate = 10;
 
 int turns=0;
 bool dontSense=false;
 
-int speedStr = 100; //120 works if no surprise rule, else 100
-int speedTur = 80;  //100 works if no surprise rule, else 80
+int speedStr = 200; //120 works if no surprise rule, else 100
+int speedTur =  170;  //100 works if no surprise rule, else 80
 
 // Target headings (0, 90, 180, 270)
 int targetHeading = 0;
@@ -132,10 +132,10 @@ void setup() {
   pinMode(mf, OUTPUT);
   pinMode(mb, OUTPUT);
   pinMode(me, OUTPUT);
-  pinMode(ms, OUTPUT);
-
-  // Initialize motor state
-  digitalWrite(ms, HIGH);  // Disable standby
+  pinMode(ms, INPUT_PULLUP);
+  while(digitalRead(ms)==1){} 
+  delay(100);
+  
   analogWrite(me, speedStr);  // Enable motor
   digitalWrite(mb, LOW);  // Enable motor
   digitalWrite(mf, HIGH);  // Enable motor
@@ -158,14 +158,14 @@ void loop() {
       mode = 'l';
     }
   }
-  else if(fd <= forntthreshold && mode == 'l' && !dontSense  && currenttime - prevtime >500){
+  else if(fd <= forntthreshold && mode == 'l' && !dontSense  && currenttime - prevtime >1000){
     if(distCalc(lt,le)>70 || fd<60){
       analogWrite(me, speedTur);  // Enable motor
       turnleft();
       }
     analogWrite(me, speedStr);  // Enable motor
   }
-  else if(fd <= forntthreshold && mode == 'r' && !dontSense && currenttime - prevtime >500){
+  else if(fd <= forntthreshold && mode == 'r' && !dontSense && currenttime - prevtime >1000){
     if(distCalc(rt,re)>70 || fd<60){
       analogWrite(me, speedTur);  // Enable motor
       turnright();
@@ -179,8 +179,11 @@ void loop() {
 
   }
 
-  if (turns>=12 && !dontSense){
-    // delay(250); //if surpriserule, put delay coz speed is lower
+  if (turns>=12){
+    while (currenttime>millis()-300){
+      forward();
+    }
+    // delay(350); //if surpriserule, put delay coz speed is lower
     digitalWrite(mf,LOW);
   }
   
