@@ -228,10 +228,10 @@ void loop() {
       blocknum = biggerblock();
     }
     else {blocknum=0;}
-    if(((pixy.ccc.blocks[blocknum].m_signature==1 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_signature==1 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_x > 260)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width){
+    if(((pixy.ccc.blocks[blocknum].m_signature==1 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_signature==1 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_x > 260)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100){
       state=dodgeRight;
     }
-    else if(((pixy.ccc.blocks[blocknum].m_signature==2 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_signature==2 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_x < 60)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width){
+    else if(((pixy.ccc.blocks[blocknum].m_signature==2 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_signature==2 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_x < 60)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100){
       state=dodgeLeft;
     }
 
