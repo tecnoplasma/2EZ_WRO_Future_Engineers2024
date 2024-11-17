@@ -189,7 +189,7 @@ void setup() {
 }
 
 void loop() {
-  while (turns<=13){
+  while (turns<=11){
     long currenttime = millis(); //for pid and advanced delays
 
     // if (uturn){
@@ -228,10 +228,10 @@ void loop() {
       blocknum = biggerblock();
     }
     else {blocknum=0;}
-    if(((pixy.ccc.blocks[blocknum].m_height >47) || (pixy.ccc.blocks[blocknum].m_x > 260)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==1){
+    if(((pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_x > 260)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==1){
       state=dodgeRight;
     }
-    else if(((pixy.ccc.blocks[blocknum].m_height >47) || (pixy.ccc.blocks[blocknum].m_x < 60)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==2){
+    else if(((pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_x < 60)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==2){
       state=dodgeLeft;
     }
 
@@ -255,16 +255,17 @@ void loop() {
       break;
 
       case left:
-        if(fd <= forntthreshold && !dontSense  && currenttime - prevtime >3000){
+        if(fd <= forntthreshold && !dontSense  && currenttime - prevtime >3000 && !pixy.ccc.numBlocks){
           analogWrite(me, speedTur);  // Enable motor
           turnleftBack();
           analogWrite(me, speedStr);  // Enable motor
           if (turns==8 && lastOb=='r'){
             turnleft();
             steeringServo.write(STRAIGHT_ANGLE);
-            digitalWrite(mf,LOW);
-            digitalWrite(mb,HIGH);
-            delay(1000);
+            while (1000>millis()-turnStartTime){
+              digitalWrite(mf,LOW);
+              digitalWrite(mb,HIGH);
+            }
             digitalWrite(mb,LOW);
             digitalWrite(mf,HIGH);
             setState=right;
@@ -274,16 +275,18 @@ void loop() {
       break;
 
       case right:
-        if(fd <= forntthreshold && !dontSense && currenttime - prevtime >3000){
+        if(fd <= forntthreshold && !dontSense && currenttime - prevtime >3000 && !pixy.ccc.numBlocks){
           analogWrite(me, speedTur);  // Enable motor
           turnrightBack();
           analogWrite(me, speedStr);  // Enable motor
           if (turns==8 && lastOb=='r'){
             turnright();
             steeringServo.write(STRAIGHT_ANGLE);
-            digitalWrite(mf,LOW);
-            digitalWrite(mb,HIGH);
-            delay(1000);
+            turnStartTime=millis();
+            while (1000>millis()-turnStartTime){
+              digitalWrite(mf,LOW);
+              digitalWrite(mb,HIGH);
+            }
             digitalWrite(mb,LOW);
             digitalWrite(mf,HIGH);
             setState=left;
@@ -311,8 +314,8 @@ void loop() {
         turnStartTime=millis();
         while (pixy.ccc.blocks[blocknum].m_x<260 && pixy.ccc.numBlocks){
           pixy.ccc.getBlocks();  
-          steeringServo.write(MAX_LEFT-10);
-          if (pixy.ccc.blocks[blocknum].m_height >58 && pixy.ccc.blocks[blocknum].m_x<200){ // && pixy.ccc.blocks[blocknum].m_x>100
+          steeringServo.write(MAX_LEFT-8);
+          if (pixy.ccc.blocks[blocknum].m_height >55 && pixy.ccc.blocks[blocknum].m_x<200){ // && pixy.ccc.blocks[blocknum].m_x>100
             steeringServo.write(MAX_RIGHT);
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
@@ -324,14 +327,14 @@ void loop() {
           }
 
         }
-        delay(500);
+        delay(300);
         turnDuration=millis()-turnStartTime;
 
         analogWrite(me,speedTur);
 
         turnStartTime=millis();
-        while (min(turnDuration*1.5,1250)+300>millis()-turnStartTime){
-          steeringServo.write(MAX_RIGHT+10);
+        while (min(turnDuration*1.25,1250)+150>millis()-turnStartTime){
+          steeringServo.write(MAX_RIGHT+8);
         }
         turnStartTime=millis();
         while (millis()<turnStartTime+600){
@@ -370,8 +373,8 @@ void loop() {
         turnStartTime=millis();
         while (pixy.ccc.blocks[blocknum].m_x>60 && pixy.ccc.numBlocks){
           pixy.ccc.getBlocks();  
-          steeringServo.write(MAX_RIGHT+10);
-          if (pixy.ccc.blocks[blocknum].m_height >58 && pixy.ccc.blocks[blocknum].m_x>100){  //&& pixy.ccc.blocks[blocknum].m_x<200
+          steeringServo.write(MAX_RIGHT+8);
+          if (pixy.ccc.blocks[blocknum].m_height >55 && pixy.ccc.blocks[blocknum].m_x>100){  //&& pixy.ccc.blocks[blocknum].m_x<200
             steeringServo.write(MAX_LEFT);
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
@@ -382,13 +385,13 @@ void loop() {
             digitalWrite(mf,HIGH);
           }
         }
-        delay(500);
+        delay(300);
         turnDuration=millis()-turnStartTime;
 
         analogWrite(me,speedTur);
 
         turnStartTime=millis();
-        while (min(turnDuration*1.5,1250)+300>millis()-turnStartTime){
+        while (min(turnDuration*1.25,1250)+150>millis()-turnStartTime){
           steeringServo.write(MAX_LEFT-10);
         }
 
@@ -422,89 +425,85 @@ void loop() {
   }
 
 
-  // prevtime=0;
-  // forntthreshold=50;
-  // while (turns>13){
-  //   long currenttime = millis();
-  //   forward();
-  //   fd=distCalc(ft,fe);
-    
-  //   pixy.ccc.getBlocks();
-  //   if (currenttime-prevtime <3500 && fd<=forntthreshold && mode != 's' && pixy.ccc.blocks[0].m_height>pixy.ccc.blocks[0].m_width){
-  //     if (mode=='l'){
+  forntthreshold=40;
+  // mode='l'; //DANGEROUS LINE THAT CAN MESS UP THE CODE. REMIDNIGN TO ME TO DELETE THIS AFTER TESTING.
 
-  //       turnStartTime=millis();
-  //       while (turnStartTime<millis()-750){ 
-  //         steeringServo.write(MAX_LEFT);
-  //       }
+  while (turns>=12){
+    long currenttime = millis();
+    forward();
+    fd=distCalc(ft,fe);
+    rd=distCalc(rt,re);
+    ld=distCalc(lt,le);
+    pixy.ccc.getBlocks();
+    if (currenttime-prevtime <500 && fd<=forntthreshold && rd<100 && ld<100){ //&& pixy.ccc.blocks[0].m_height>pixy.ccc.blocks[0].m_width
+      if (state == left){
 
-  //       analogWrite(me,speedTur);
+        turnStartTime=millis();
+        while (turnStartTime>millis()-950){ 
+          steeringServo.write(MAX_LEFT);
+        }
 
-  //       turnStartTime=millis();
-  //       while (turnStartTime>millis()-1250){
-  //         steeringServo.write(MAX_RIGHT);
-  //       }
-  //       digitalWrite(ms,LOW);
-  //     }
-  //     else if (mode=='r'){
-  //       turnStartTime=millis();
-  //       while (turnStartTime<millis()-750){ 
-  //         steeringServo.write(MAX_RIGHT);
-  //       }
+        analogWrite(me,110);
 
-  //       analogWrite(me,speedTur);
+        turnStartTime=millis();
+        while (turnStartTime>millis()-3000){
+          steeringServo.write(MAX_RIGHT-5);
+        }
+        digitalWrite(ms,LOW);
+        digitalWrite(me,LOW);
+      }
+      else if (state == right){
+        turnStartTime=millis();
+        while (turnStartTime>millis()-950){ 
+          steeringServo.write(MAX_RIGHT);
+        }
 
-  //       turnStartTime=millis();
-  //       while (turnStartTime>millis()-1250){
-  //         steeringServo.write(MAX_LEFT);
-  //       }
-  //       digitalWrite(ms,LOW);
-  //     }
-  //   }
-    
-  //   if(fd <= forntthreshold && mode == 's'){
-  //     rd=distCalc(rt,re);
-  //     ld=distCalc(lt,le);
-  //     if(rd >= rightthreshold){
-  //       mode = 'r';
-  //     }
-  //     else if(ld >= leftthreshold){
-  //       mode = 'l';
-  //     }
-  //   }
-    
-  //   if(fd <= forntthreshold && mode == 'l' && !dontSense  && currenttime - prevtime >3000){
-  //     if(distCalc(lt,le)>70 || fd<50){
-  //       analogWrite(me, speedTur);  // Enable motor
-  //       turnleft();
-  //     }
-  //     analogWrite(me, speedStr);  // Enable motor
-  //   }
-  //   else if(fd <= forntthreshold && mode == 'r' && !dontSense && currenttime - prevtime >3000){
-  //     if(distCalc(rt,re)>70 || fd<50){
-  //       analogWrite(me, speedTur);  // Enable motor
-  //       turnright();
-  //     }
-  //     analogWrite(me, speedStr);  // Enable motor
-  //   }
+        analogWrite(me,speedTur);
 
-  //   if (abs(targetHeading-currentHeading)<=10 && dontSense){
-  //     prevtime = currenttime;
-  //     dontSense=false;
-  //   }
-  // }
-
-
-
-
-  if (turns>=12){
-    turnStartTime=millis();
-    while (turnStartTime>millis()-2000){
-      forward();
+        turnStartTime=millis();
+        while (turnStartTime>millis()-3000){
+          steeringServo.write(MAX_LEFT+5);
+        }
+        digitalWrite(ms,LOW);
+        digitalWrite(me,LOW);
+      }
     }
-    // delay(350); //if surpriserule, put delay coz speed is lower
-    digitalWrite(ms,LOW);
+    
+    if(fd <= forntthreshold && state == left && !dontSense  && currenttime - prevtime >3000){
+      if(distCalc(lt,le)>70){
+        analogWrite(me, speedTur);  // Enable motor
+        turnleft();
+      }
+      analogWrite(me, speedStr);  // Enable motor
+    }
+    else if(fd <= forntthreshold && state == right && !dontSense && currenttime - prevtime >3000){
+      if(distCalc(rt,re)>70){
+        analogWrite(me, speedTur);  // Enable motor
+        turnright();
+      }
+      analogWrite(me, speedStr);  // Enable motor
+    }
+
+    if (abs(targetHeading-currentHeading)<=10 && dontSense){
+      prevtime = currenttime;
+      dontSense=false;
+    }
+    
   }
+
+
+
+
+
+  // if (turns>=12){
+  //   turnStartTime=millis();
+  //   while (turnStartTime>millis()-2000){
+  //     forward();
+  //   }
+  //   // delay(350); //if surpriserule, put delay coz speed is lower
+  //   digitalWrite(ms,LOW);
+  //   digitalWrite(me,LOW);
+  // }
 
 
   // Serial.print("Heading: ");
