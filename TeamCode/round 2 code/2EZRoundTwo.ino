@@ -12,7 +12,7 @@
 
 #define LED_PIN 9
 #define LED_COUNT 18
-#define BRIGHTNESS 255
+#define BRIGHTNESS 0
 
 //declarations
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
@@ -57,7 +57,7 @@ float fd;
 int avg = 0;
 int sample = 3;
 int read;
-int forntthreshold = 20;
+int forntthreshold = 35;
 int leftthreshold = 100;  //100 if no surprise //70 if there is
 int rightthreshold = 100; //100 if no surprise //70 if there is
 
@@ -73,7 +73,7 @@ float derivative = 0;
 float steeringAdjustment = 0;
 int newServoPosition = 0;
 char mode = 's';
-int deviate = 15;
+int deviate = 14;
 
 int turns=0;
 bool dontSense=false;
@@ -228,10 +228,10 @@ void loop() {
       blocknum = biggerblock();
     }
     else {blocknum=0;}
-    if(((pixy.ccc.blocks[blocknum].m_signature==1 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_signature==1 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_x > 260)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100){
+    if(((pixy.ccc.blocks[blocknum].m_height >47) || (pixy.ccc.blocks[blocknum].m_x > 260)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==1){
       state=dodgeRight;
     }
-    else if(((pixy.ccc.blocks[blocknum].m_signature==2 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_signature==2 && pixy.ccc.blocks[blocknum].m_age>1 && pixy.ccc.blocks[blocknum].m_x < 60)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100){
+    else if(((pixy.ccc.blocks[blocknum].m_height >47) || (pixy.ccc.blocks[blocknum].m_x < 60)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==2){
       state=dodgeLeft;
     }
 
@@ -311,8 +311,8 @@ void loop() {
         turnStartTime=millis();
         while (pixy.ccc.blocks[blocknum].m_x<260 && pixy.ccc.numBlocks){
           pixy.ccc.getBlocks();  
-          steeringServo.write(MAX_LEFT-7);
-          if (pixy.ccc.blocks[blocknum].m_height >50 && pixy.ccc.blocks[blocknum].m_x<200){ // && pixy.ccc.blocks[blocknum].m_x>100
+          steeringServo.write(MAX_LEFT-10);
+          if (pixy.ccc.blocks[blocknum].m_height >58 && pixy.ccc.blocks[blocknum].m_x<200){ // && pixy.ccc.blocks[blocknum].m_x>100
             steeringServo.write(MAX_RIGHT);
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
@@ -324,13 +324,13 @@ void loop() {
           }
 
         }
-        delay(250);
+        delay(500);
         turnDuration=millis()-turnStartTime;
 
         analogWrite(me,speedTur);
 
         turnStartTime=millis();
-        while (min(turnDuration*1.5,1250)+100>millis()-turnStartTime){
+        while (min(turnDuration*1.5,1250)+300>millis()-turnStartTime){
           steeringServo.write(MAX_RIGHT+10);
         }
         turnStartTime=millis();
@@ -354,7 +354,7 @@ void loop() {
 
         midTurn=true;
         dontSense=true;
-        while (pixy.ccc.blocks[blocknum].m_height >70){
+        while (pixy.ccc.blocks[blocknum].m_height >75){
           pixy.ccc.getBlocks(); 
           digitalWrite(mf,LOW);
           digitalWrite(mb,HIGH);
@@ -370,8 +370,8 @@ void loop() {
         turnStartTime=millis();
         while (pixy.ccc.blocks[blocknum].m_x>60 && pixy.ccc.numBlocks){
           pixy.ccc.getBlocks();  
-          steeringServo.write(MAX_RIGHT+7);
-          if (pixy.ccc.blocks[blocknum].m_height >50 && pixy.ccc.blocks[blocknum].m_x>100){  //&& pixy.ccc.blocks[blocknum].m_x<200
+          steeringServo.write(MAX_RIGHT+10);
+          if (pixy.ccc.blocks[blocknum].m_height >58 && pixy.ccc.blocks[blocknum].m_x>100){  //&& pixy.ccc.blocks[blocknum].m_x<200
             steeringServo.write(MAX_LEFT);
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
@@ -382,13 +382,13 @@ void loop() {
             digitalWrite(mf,HIGH);
           }
         }
-        delay(250);
+        delay(500);
         turnDuration=millis()-turnStartTime;
 
         analogWrite(me,speedTur);
 
         turnStartTime=millis();
-        while (min(turnDuration*1.5,1250)+100>millis()-turnStartTime){
+        while (min(turnDuration*1.5,1250)+300>millis()-turnStartTime){
           steeringServo.write(MAX_LEFT-10);
         }
 
