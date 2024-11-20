@@ -5,6 +5,8 @@
 #include <Servo.h>
 #include <Pixy2.h> 
 #include <Adafruit_NeoPixel.h>
+#include <Pixy2I2C.h>
+#include <Pixy2SPI_SS.h>
 
 #ifdef __AVR__
 #include <avr/power.h> 
@@ -27,7 +29,9 @@ const int fe = 7;
 bool uturn = false;
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
-Pixy2 pixy;
+// Pixy2 pixy;
+Pixy2I2C pixy2;
+Pixy2SPI_SS pixy;
 
 Servo steeringServo;
 long duration;
@@ -162,6 +166,7 @@ void setup() {
   }
   // initializing the pixy camera
   pixy.init();
+  pixy2.init();
 
   // initializing the neo pixel strip
   strip.begin();
