@@ -30,8 +30,8 @@ bool uturn = false;
 
 Adafruit_BNO055 bno = Adafruit_BNO055(55);
 // Pixy2 pixy;
-Pixy2I2C pixy2;
 Pixy2SPI_SS pixy;
+Pixy2I2C pixy2;
 
 Servo steeringServo;
 long duration;
@@ -55,6 +55,7 @@ int echoD;
 float Kp = 4.0;                   // Proportional gain
 float Ki = 0.0;                   // Integral gain
 float Kd = 1.0;                   // Derivative gain
+float pKp = 4;
 float rd;
 float ld;
 float fd;
@@ -431,49 +432,98 @@ void loop() {
 
 
   forntthreshold=40;
-  // mode='l'; //DANGEROUS LINE THAT CAN MESS UP THE CODE. REMIDNIGN TO ME TO DELETE THIS AFTER TESTING.
-
   while (turns>=12){
     long currenttime = millis();
-    forward();
+    if (!dontSense)
+      forward();
     fd=distCalc(ft,fe);
     rd=distCalc(rt,re);
     ld=distCalc(lt,le);
-    pixy.ccc.getBlocks();
-    if (currenttime-prevtime <500 && fd<=forntthreshold && rd<100 && ld<100){ //&& pixy.ccc.blocks[0].m_height>pixy.ccc.blocks[0].m_width
+    pixy2.ccc.getBlocks();
+    if (pixy2.ccc.blocks[0].m_height> 40 && pixy2.ccc.numBlocks){ //&& pixy.ccc.blocks[0].m_height>pixy.ccc.blocks[0].m_width && currenttime-prevtime <500 && 
+        dontSense=true;
+        colorWipe(strip.Color(255,0,0));
+        // while (pixy2.ccc.blocks[0].m_height> 25 && pixy2.ccc.numBlocks){
+        //   analogWrite(me,110);
+        //   analogWrite(mb,HIGH);
+        //   analogWrite(mf,LOW);
+        // }
+        // analogWrite(mf,HIGH);
+        // analogWrite(mb,LOW);
       if (state == left){
 
+        
+        analogWrite(me,speedTur);
         turnStartTime=millis();
-        while (turnStartTime>millis()-950){ 
+        while (turnStartTime>millis()-pixy2.ccc.blocks[0].m_x*pKp){ 
           steeringServo.write(MAX_LEFT);
         }
-
-        analogWrite(me,110);
+        turnDuration=pixy2.ccc.blocks[0].m_x*pKp;
+        analogWrite(me,200);
 
         turnStartTime=millis();
-        while (turnStartTime>millis()-3000){
+        while (turnStartTime>millis()-(turnDuration/1.75)){
           steeringServo.write(MAX_RIGHT-5);
         }
-        digitalWrite(ms,LOW);
-        digitalWrite(me,LOW);
-      }
-      else if (state == right){
         turnStartTime=millis();
-        while (turnStartTime>millis()-950){ 
+        while (turnStartTime>millis()-(int)(turnDuration/1.7)){
+          digitalWrite(mf,LOW);
+          digitalWrite(mb,HIGH);
+          steeringServo.write(MAX_LEFT);
+        }
+        digitalWrite(mf,HIGH);
+        digitalWrite(mb,LOW);
+        turnStartTime=millis();
+        while (turnStartTime>millis()-(3000)){
           steeringServo.write(MAX_RIGHT);
         }
+        
 
-        analogWrite(me,speedTur);
-
-        turnStartTime=millis();
-        while (turnStartTime>millis()-3000){
-          steeringServo.write(MAX_LEFT+5);
-        }
         digitalWrite(ms,LOW);
         digitalWrite(me,LOW);
+        digitalWrite(mf,LOW);
+        digitalWrite(mb,LOW);
+
+
+
+      }
+      else if (state == right){
+
+
+        analogWrite(me,speedTur);
+        turnStartTime=millis();
+        while (turnStartTime>millis()-pixy2.ccc.blocks[0].m_x*pKp){ 
+          steeringServo.write(MAX_RIGHT);
+        }
+        turnDuration=pixy2.ccc.blocks[0].m_x*pKp;
+        analogWrite(me,200);
+
+        turnStartTime=millis();
+        while (turnStartTime>millis()-(turnDuration/1.75)){
+          steeringServo.write(MAX_LEFT+5);
+        }
+        turnStartTime=millis();
+        while (turnStartTime>millis()-(int)(turnDuration/1.7)){
+          digitalWrite(mf,LOW);
+          digitalWrite(mb,HIGH);
+          steeringServo.write(MAX_RIGHT);
+        }
+        digitalWrite(mf,HIGH);
+        digitalWrite(mb,LOW);
+        turnStartTime=millis();
+        while (turnStartTime>millis()-(3000)){
+          steeringServo.write(MAX_LEFT);
+        }
+        
+
+        digitalWrite(ms,LOW);
+        digitalWrite(me,LOW);
+        digitalWrite(mf,LOW);
+        digitalWrite(mb,LOW);
+
+
       }
     }
-    
     if(fd <= forntthreshold && state == left && !dontSense  && currenttime - prevtime >3000){
       if(distCalc(lt,le)>70){
         analogWrite(me, speedTur);  // Enable motor
@@ -493,7 +543,6 @@ void loop() {
       prevtime = currenttime;
       dontSense=false;
     }
-    
   }
 
 
