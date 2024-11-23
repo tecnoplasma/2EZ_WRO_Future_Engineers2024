@@ -14,7 +14,7 @@
 
 #define LED_PIN 9
 #define LED_COUNT 18
-#define BRIGHTNESS 0
+#define BRIGHTNESS 255
 
 //declarations
 Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
@@ -150,6 +150,13 @@ enum State{
 State state=str;
 State setState=str;
 
+enum ParkState{
+  leftP,
+  rightP,
+  park
+};
+ParkState pState;
+
 void setup() {
   //initilizations
   pinMode(rt, OUTPUT);
@@ -195,7 +202,7 @@ void setup() {
 }
 
 void loop() {
-  while (turns<=11){
+  while (turns<=12){
     long currenttime = millis(); //for pid and advanced delays
 
     // if (uturn){
@@ -234,10 +241,10 @@ void loop() {
       blocknum = biggerblock();
     }
     else {blocknum=0;}
-    if(((pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_x > 260)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==1){
+    if(((pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_x > 250)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==1){
       state=dodgeRight;
     }
-    else if(((pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_x < 60)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==2){
+    else if(((pixy.ccc.blocks[blocknum].m_height >50) || (pixy.ccc.blocks[blocknum].m_x < 70)) && pixy.ccc.blocks[blocknum].m_height>pixy.ccc.blocks[blocknum].m_width && fd>100 && pixy.ccc.blocks[blocknum].m_signature==2){
       state=dodgeLeft;
     }
 
@@ -252,51 +259,65 @@ void loop() {
           if(rd >= rightthreshold){
             state=right;
             setState=right;
+            pState=rightP;
           }
           else if(ld >= leftthreshold){
             state=left;
             setState=left;
+            pState=leftP;
           }
         }
       break;
 
       case left:
         if(fd <= forntthreshold && !dontSense  && currenttime - prevtime >3000 && !pixy.ccc.numBlocks){
-          analogWrite(me, speedTur);  // Enable motor
-          turnleftBack();
-          analogWrite(me, speedStr);  // Enable motor
-          if (turns==8 && lastOb=='r'){
+          if (turns==12) {
             turnleft();
-            steeringServo.write(STRAIGHT_ANGLE);
-            while (1000>millis()-turnStartTime){
-              digitalWrite(mf,LOW);
-              digitalWrite(mb,HIGH);
+          }
+          else{
+            analogWrite(me, speedTur);  // Enable motor
+            turnleftBack();
+            analogWrite(me, speedStr);  // Enable motor
+            if (turns==8 && lastOb=='r'){
+              turnleft();
+              steeringServo.write(STRAIGHT_ANGLE);
+              while (1000>millis()-turnStartTime){
+                digitalWrite(mf,LOW);
+                digitalWrite(mb,HIGH);
+              }
+              digitalWrite(mb,LOW);
+              digitalWrite(mf,HIGH);
+              setState=right;
+              pState=rightP;
+              lastOb='n';
             }
-            digitalWrite(mb,LOW);
-            digitalWrite(mf,HIGH);
-            setState=right;
-            lastOb='n';
           }
         }
       break;
 
       case right:
         if(fd <= forntthreshold && !dontSense && currenttime - prevtime >3000 && !pixy.ccc.numBlocks){
-          analogWrite(me, speedTur);  // Enable motor
-          turnrightBack();
-          analogWrite(me, speedStr);  // Enable motor
-          if (turns==8 && lastOb=='r'){
+          if (turns==12) {
             turnright();
-            steeringServo.write(STRAIGHT_ANGLE);
-            turnStartTime=millis();
-            while (1000>millis()-turnStartTime){
-              digitalWrite(mf,LOW);
-              digitalWrite(mb,HIGH);
+          }
+          else{
+            analogWrite(me, speedTur);  // Enable motor
+            turnrightBack();
+            analogWrite(me, speedStr);  // Enable motor
+            if (turns==8 && lastOb=='r'){
+              turnright();
+              steeringServo.write(STRAIGHT_ANGLE);
+              turnStartTime=millis();
+              while (1000>millis()-turnStartTime){
+                digitalWrite(mf,LOW);
+                digitalWrite(mb,HIGH);
+              }
+              digitalWrite(mb,LOW);
+              digitalWrite(mf,HIGH);
+              setState=left;
+              pState=leftP;
+              lastOb='n';
             }
-            digitalWrite(mb,LOW);
-            digitalWrite(mf,HIGH);
-            setState=left;
-            lastOb='n';
           }
         }
       break;
@@ -414,10 +435,10 @@ void loop() {
     }
     state=setState;
     
-      if (abs(targetHeading-currentHeading)<=10 && dontSense){
-        prevtime = currenttime;
-        dontSense=false;
-      }
+    if (abs(targetHeading-currentHeading)<=10 && dontSense){
+      prevtime = currenttime;
+      dontSense=false;
+    }
       // if (turns>=12){
       //   delay(500); 
       //   digitalWrite(mf,LOW);
@@ -431,113 +452,127 @@ void loop() {
   }
 
 
-  forntthreshold=40;
+  forntthreshold=37;
   while (turns>=12){
+  
     long currenttime = millis();
     if (!dontSense)
       forward();
     fd=distCalc(ft,fe);
     rd=distCalc(rt,re);
     ld=distCalc(lt,le);
+
+    if (setState=right){
+      pState=rightP;
+    }
+    else{
+      pState=leftP;
+    }
+
     pixy2.ccc.getBlocks();
-    if (pixy2.ccc.blocks[0].m_height> 40 && pixy2.ccc.numBlocks){ //&& pixy.ccc.blocks[0].m_height>pixy.ccc.blocks[0].m_width && currenttime-prevtime <500 && 
+    if (pixy2.ccc.blocks[0].m_height> 40 && pixy2.ccc.blocks[0].m_height<pixy2.ccc.blocks[0].m_width && pixy2.ccc.numBlocks){
+      pState=park;
+    }
+
+    switch(pState){
+
+      case rightP:
+        if(fd <= forntthreshold && !dontSense  && currenttime - prevtime >2000 && !pixy2.ccc.numBlocks){
+          analogWrite(me, speedTur);  // Enable motor
+          turnright();
+          analogWrite(me, speedStr);  // Enable motor
+        }
+      break;
+
+      case leftP:
+        if(fd <= forntthreshold && !dontSense  && currenttime - prevtime >2000 && !pixy2.ccc.numBlocks){
+          analogWrite(me, speedTur);  // Enable motor
+          turnleft();
+          analogWrite(me, speedStr);  // Enable motor
+        }
+      break;
+
+      case park:
         dontSense=true;
         colorWipe(strip.Color(255,0,0));
-        // while (pixy2.ccc.blocks[0].m_height> 25 && pixy2.ccc.numBlocks){
-        //   analogWrite(me,110);
-        //   analogWrite(mb,HIGH);
-        //   analogWrite(mf,LOW);
-        // }
-        // analogWrite(mf,HIGH);
-        // analogWrite(mb,LOW);
-      if (state == left){
+        if (setState == left){
 
-        
-        analogWrite(me,speedTur);
-        turnStartTime=millis();
-        while (turnStartTime>millis()-pixy2.ccc.blocks[0].m_x*pKp){ 
-          steeringServo.write(MAX_LEFT);
-        }
-        turnDuration=pixy2.ccc.blocks[0].m_x*pKp;
-        analogWrite(me,200);
+          
+          analogWrite(me,speedTur);
+          turnStartTime=millis();
+          while (turnStartTime>millis()-pixy2.ccc.blocks[0].m_x*pKp){ 
+            steeringServo.write(MAX_LEFT);
+          }
+          turnDuration=pixy2.ccc.blocks[0].m_x*pKp;
+          analogWrite(me,200);
 
-        turnStartTime=millis();
-        while (turnStartTime>millis()-(turnDuration/1.75)){
-          steeringServo.write(MAX_RIGHT-5);
-        }
-        turnStartTime=millis();
-        while (turnStartTime>millis()-(int)(turnDuration/1.7)){
+          turnStartTime=millis();
+          while (turnStartTime>millis()-(turnDuration/1.75)){
+            steeringServo.write(MAX_RIGHT-5);
+          }
+          turnStartTime=millis();
+          while (turnStartTime>millis()-(int)(turnDuration/1.7)){
+            digitalWrite(mf,LOW);
+            digitalWrite(mb,HIGH);
+            steeringServo.write(MAX_LEFT);
+          }
+          digitalWrite(mf,HIGH);
+          digitalWrite(mb,LOW);
+          turnStartTime=millis();
+          while (turnStartTime>millis()-(3000)){
+            steeringServo.write(MAX_RIGHT);
+          }
+          
+
+          digitalWrite(ms,LOW);
+          digitalWrite(me,LOW);
           digitalWrite(mf,LOW);
-          digitalWrite(mb,HIGH);
-          steeringServo.write(MAX_LEFT);
+          digitalWrite(mb,LOW);
+
+
+
         }
-        digitalWrite(mf,HIGH);
-        digitalWrite(mb,LOW);
-        turnStartTime=millis();
-        while (turnStartTime>millis()-(3000)){
-          steeringServo.write(MAX_RIGHT);
-        }
-        
-
-        digitalWrite(ms,LOW);
-        digitalWrite(me,LOW);
-        digitalWrite(mf,LOW);
-        digitalWrite(mb,LOW);
+        else if (setState == right){
 
 
+          analogWrite(me,speedTur);
+          turnStartTime=millis();
+          while (turnStartTime>millis()-pixy2.ccc.blocks[0].m_x*pKp){ 
+            steeringServo.write(MAX_RIGHT);
+          }
+          turnDuration=pixy2.ccc.blocks[0].m_x*pKp;
+          analogWrite(me,200);
 
-      }
-      else if (state == right){
+          turnStartTime=millis();
+          while (turnStartTime>millis()-(turnDuration/1.75)){
+            steeringServo.write(MAX_LEFT+5);
+          }
+          turnStartTime=millis();
+          while (turnStartTime>millis()-(int)(turnDuration/1.7)){
+            digitalWrite(mf,LOW);
+            digitalWrite(mb,HIGH);
+            steeringServo.write(MAX_RIGHT);
+          }
+          digitalWrite(mf,HIGH);
+          digitalWrite(mb,LOW);
+          turnStartTime=millis();
+          while (turnStartTime>millis()-(3000)){
+            steeringServo.write(MAX_LEFT);
+          }
+          
 
-
-        analogWrite(me,speedTur);
-        turnStartTime=millis();
-        while (turnStartTime>millis()-pixy2.ccc.blocks[0].m_x*pKp){ 
-          steeringServo.write(MAX_RIGHT);
-        }
-        turnDuration=pixy2.ccc.blocks[0].m_x*pKp;
-        analogWrite(me,200);
-
-        turnStartTime=millis();
-        while (turnStartTime>millis()-(turnDuration/1.75)){
-          steeringServo.write(MAX_LEFT+5);
-        }
-        turnStartTime=millis();
-        while (turnStartTime>millis()-(int)(turnDuration/1.7)){
+          digitalWrite(ms,LOW);
+          digitalWrite(me,LOW);
           digitalWrite(mf,LOW);
-          digitalWrite(mb,HIGH);
-          steeringServo.write(MAX_RIGHT);
+          digitalWrite(mb,LOW);
+
+
         }
-        digitalWrite(mf,HIGH);
-        digitalWrite(mb,LOW);
-        turnStartTime=millis();
-        while (turnStartTime>millis()-(3000)){
-          steeringServo.write(MAX_LEFT);
-        }
-        
-
-        digitalWrite(ms,LOW);
-        digitalWrite(me,LOW);
-        digitalWrite(mf,LOW);
-        digitalWrite(mb,LOW);
+      break;
 
 
-      }
     }
-    if(fd <= forntthreshold && state == left && !dontSense  && currenttime - prevtime >3000){
-      if(distCalc(lt,le)>70){
-        analogWrite(me, speedTur);  // Enable motor
-        turnleft();
-      }
-      analogWrite(me, speedStr);  // Enable motor
-    }
-    else if(fd <= forntthreshold && state == right && !dontSense && currenttime - prevtime >3000){
-      if(distCalc(rt,re)>70){
-        analogWrite(me, speedTur);  // Enable motor
-        turnright();
-      }
-      analogWrite(me, speedStr);  // Enable motor
-    }
+
 
     if (abs(targetHeading-currentHeading)<=10 && dontSense){
       prevtime = currenttime;
@@ -596,6 +631,7 @@ void turnright()
       Serial.print("| targetHeading ");
       Serial.println(targetHeading-deviate);
     }
+    turns++;
     // digitalWrite(me, LOW); 
 }
 void stopMotor() {
@@ -636,37 +672,6 @@ void turnrightBack()
   digitalWrite(mf,HIGH);
   midTurn=false;
 }
-void turnrightBackUturn()
-{
-  steeringServo.write(MAX_RIGHT);
-  delay(500);
-  midTurn=true;
-  dontSense=true;
-
-  digitalWrite(mf,LOW);
-  digitalWrite(mb,HIGH);
-    updateTargetHeadingright();
-    steeringServo.write(MAX_LEFT);
-    delay (750);
-    while(currentHeading <= (targetHeading-deviate)){
-      bno.getEvent(&event);
-      currentHeading = event.orientation.x;
-      Serial.print("Heading: ");
-      Serial.print(currentHeading);
-      Serial.print("| servo position: ");
-      Serial.print(newServoPosition);
-      Serial.print("| targetHeading ");
-      Serial.println(targetHeading-deviate);
-    }
-    steeringServo.write(STRAIGHT_ANGLE);
-    if(!uturn){
-      turns++;
-      }
-    delay(1000);
-  digitalWrite(mb,LOW);
-  digitalWrite(mf,HIGH);
-  midTurn=false;
-}
 
 void turnleft()
 {
@@ -684,6 +689,7 @@ void turnleft()
     Serial.print("| targetHeading ");
     Serial.println(targetHeading-deviate);
   }
+  turns++;
 }
 
 void turnleftBack()
