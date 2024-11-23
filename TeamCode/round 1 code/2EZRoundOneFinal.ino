@@ -40,7 +40,7 @@ float fd;
 int avg = 0;
 int sample = 3;
 int read;
-int forntthreshold = 100;
+int forntthreshold = 85;
 int leftthreshold = 100;  //100 if no surprise //70 if there is
 int rightthreshold = 100; //100 if no surprise //70 if there is
 
@@ -55,13 +55,13 @@ float derivative = 0;
 float steeringAdjustment = 0;
 int newServoPosition = 0;
 char mode = 's';
-int deviate = 10;
+int deviate = 20;
 
 int turns=0;
 bool dontSense=false;
 
-int speedStr = 200; //120 works if no surprise rule, else 100
-int speedTur =  170;  //100 works if no surprise rule, else 80
+int speedStr = 255; //120 works if no surprise rule, else 100
+int speedTur =  230;  //100 works if no surprise rule, else 80
 
 // Target headings (0, 90, 180, 270)
 int targetHeading = 0;
@@ -159,14 +159,14 @@ void loop() {
     }
   }
   else if(fd <= forntthreshold && mode == 'l' && !dontSense  && currenttime - prevtime >1000){
-    if(distCalc(lt,le)>70 || fd<60){
+    if(distCalc(lt,le)>70 || fd<30){
       analogWrite(me, speedTur);  // Enable motor
       turnleft();
       }
     analogWrite(me, speedStr);  // Enable motor
   }
   else if(fd <= forntthreshold && mode == 'r' && !dontSense && currenttime - prevtime >1000){
-    if(distCalc(rt,re)>70 || fd<60){
+    if(distCalc(rt,re)>70 || fd<40){
       analogWrite(me, speedTur);  // Enable motor
       turnright();
       }
@@ -180,7 +180,7 @@ void loop() {
   }
 
   if (turns>=12){
-    while (currenttime>millis()-300){
+    while (currenttime>millis()-1000){
       forward();
     }
     // delay(350); //if surpriserule, put delay coz speed is lower
