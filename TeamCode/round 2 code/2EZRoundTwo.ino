@@ -95,6 +95,7 @@ unsigned long turnDuration = 0;
 bool nextCorr=false;
 char lastOb='g';
 bool joepapa = false;
+int centerOffset=0;
 
 
 //function to calculate the shortest turn direction
@@ -235,7 +236,6 @@ void loop() {
       forward();
     if (!dontSense)  //ultrasonics are off during dodging and turning
       fd=distCalc(ft,fe);
-
     pixy.ccc.getBlocks(); 
     if(pixy.ccc.numBlocks >1){
       blocknum = biggerblock();
@@ -248,7 +248,26 @@ void loop() {
       state=dodgeLeft;
     }
 
+    if (fd>120 && !dontSense && !midTurn && currenttime - prevtime <3500){
+      rd=distCalc(rt,re);
+      ld=distCalc(lt,le);
+      if (rd<40){
+        centerOffset=-20;
+      }
+      else if (ld<40){
+        centerOffset=20;
+      }
+      else{
+        centerOffset=0;
+      }
+    }
+    if (dontSense || midTurn){
+      centerOffset=0;
+    }
 
+    if (centerOffset!=0 && currenttime-prevtime>1000){
+      centerOffset=0;
+    }
 
     switch(state){
       case str:
@@ -288,7 +307,8 @@ void loop() {
             if (turns==8 && lastOb=='r'){
               turnleft();
               steeringServo.write(STRAIGHT_ANGLE);
-              while (1500>millis()-turnStartTime){
+              turnStartTime=millis();
+              while (1250>millis()-turnStartTime){
                 digitalWrite(mf,LOW);
                 digitalWrite(mb,HIGH);
               }
@@ -322,7 +342,7 @@ void loop() {
               turnright();
               steeringServo.write(STRAIGHT_ANGLE);
               turnStartTime=millis();
-              while (1500>millis()-turnStartTime){
+              while (1250>millis()-turnStartTime){
                 digitalWrite(mf,LOW);
                 digitalWrite(mb,HIGH);
               }
@@ -368,15 +388,17 @@ void loop() {
           }
 
         }
-        delay(300);
+        delay(600);
         turnDuration=millis()-turnStartTime;
 
         analogWrite(me,speedTur);
 
         turnStartTime=millis();
-        while (min(turnDuration*1.25,1500)+150>millis()-turnStartTime){
+        while (min(turnDuration*1.25,1250)+150>millis()-turnStartTime){
           steeringServo.write(MAX_RIGHT+9);
         }
+
+        centerOffset=20;
         turnStartTime=millis();
         while (millis()<turnStartTime+600){
           forward();
@@ -432,10 +454,11 @@ void loop() {
         analogWrite(me,speedTur);
 
         turnStartTime=millis();
-        while (min(turnDuration*1.35,1500)+150>millis()-turnStartTime){
+        while (min(turnDuration*1.5,1500)+150>millis()-turnStartTime){
           steeringServo.write(MAX_LEFT-9);
         }
 
+        centerOffset=-20;
         turnStartTime=millis();
         while (millis()<turnStartTime+600){
           forward();
@@ -470,6 +493,7 @@ void loop() {
  
   forntthreshold=33;
   while (turns>=13){
+    centerOffset=0;
     colorWipe(strip.Color(0,255,0));
     long currenttime = millis();
     if (!midTurn) //pids off during dodges and turns
@@ -512,10 +536,10 @@ void loop() {
           
           analogWrite(me,speedTur);
           turnStartTime=millis();
-          while (turnStartTime>millis()-pixy2.ccc.blocks[0].m_x*pKp){ 
+          while (turnStartTime>millis()-(320-pixy2.ccc.blocks[0].m_x)*pKp){ 
             steeringServo.write(MAX_LEFT);
           }
-          turnDuration=pixy2.ccc.blocks[0].m_x*pKp;
+          turnDuration=(320-pixy2.ccc.blocks[0].m_x)*pKp;
           analogWrite(me,200);
 
           turnStartTime=millis();
@@ -748,7 +772,8 @@ void forward(){
   bno.getEvent(&event);
   currentHeading = event.orientation.x;
   error = calculateAngleError(targetHeading, currentHeading);
-  if (turns>12) error+=5; // for drift, it might mess stuff up tho
+  // if (turns>12) error+=5; // for drift, it might mess stuff up tho
+  error += centerOffset; // for staying in center
   integral += error;
   derivative = error - previousError;
   steeringAdjustment = Kp * error + Ki * integral + Kd * derivative;
