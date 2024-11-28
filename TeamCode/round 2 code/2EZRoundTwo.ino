@@ -17,7 +17,7 @@
 #define BRIGHTNESS 255
 
 //declarations
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 
 
 const int rt = A3;
@@ -96,6 +96,7 @@ bool nextCorr=false;
 char lastOb='g';
 bool joepapa = false;
 int centerOffset=0;
+bool didWeWait=false;
 
 
 //function to calculate the shortest turn direction
@@ -205,37 +206,15 @@ void setup() {
 void loop() {
   while (turns<=12){
     long currenttime = millis(); //for pid and advanced delays
-
-    // if (uturn){
-    //   while(currenttime > millis()-500){
-    //     forward();
-    //   }
-    //   turnrightBack();
-    //   delay(50);
-    //   turnright();
-    //   delay(50);
-    //   steeringServo.write(MAX_LEFT);
-    //   digitalWrite(mf,LOW);
-    //   digitalWrite(mb,HIGH);
-    //   delay(350);
-    //   steeringServo.write(STRAIGHT_ANGLE);
-    //   delay(800);
-    //   digitalWrite(mb,LOW);
-    //   digitalWrite(mf,HIGH);
-    //   if(setState == left){
-    //     setState = right;
-    //   }
-    //   else if(setState == right){
-    //     setState=left;
-    //   }
-    //   joepapa = true;
-    //   uturn = false;
-    // }
     
     if (!midTurn) //pids off during dodges and turns
       forward();
     if (!dontSense)  //ultrasonics are off during dodging and turning
       fd=distCalc(ft,fe);
+    if (turns>11){
+      rd=distCalc(rt,re); 
+      ld=distCalc(lt,le);
+    }
     pixy.ccc.getBlocks(); 
     if(pixy.ccc.numBlocks >1){
       blocknum = biggerblock();
@@ -252,10 +231,10 @@ void loop() {
       rd=distCalc(rt,re);
       ld=distCalc(lt,le);
       if (rd<40){
-        centerOffset=-20;
+        centerOffset=20;
       }
       else if (ld<40){
-        centerOffset=20;
+        centerOffset=-20;
       }
       else{
         centerOffset=0;
@@ -269,21 +248,36 @@ void loop() {
       centerOffset=0;
     }
 
+    if (turns==12 && rd<100 && ld<100 && fd<150 && !didWeWait && !midTurn && !dontSense){
+      turnStartTime=millis();
+      while (millis()-turnStartTime<5000){
+        digitalWrite(mf,LOW);
+        digitalWrite(mb,LOW);
+        //wait for 5 seconds after 3 laps done!
+      }
+      digitalWrite(mf,HIGH);
+      digitalWrite(mb,LOW);
+      didWeWait=true;
+    }
+
     switch(state){
       case str:
 
-        if (fd<forntthreshold){
-          rd=distCalc(rt,re);
-          ld=distCalc(lt,le);
-          if(rd >= rightthreshold){
-            state=right;
-            setState=right;
-            pState=rightP;
-          }
-          else if(ld >= leftthreshold){
-            state=left;
-            setState=left;
-            pState=leftP;
+        if (fd<(forntthreshold-10)){
+          while(state==str){
+            forward();
+            rd=distCalc(rt,re);
+            ld=distCalc(lt,le);
+            if(rd >= rightthreshold){
+              state=right;
+              setState=right;
+              pState=rightP;
+            }
+            if(ld >= leftthreshold){
+              state=left;
+              setState=left;
+              pState=leftP;
+            }
           }
         }
       break;
@@ -299,13 +293,21 @@ void loop() {
             digitalWrite(mb,LOW);
             digitalWrite(mf,HIGH);
             turnleft();
+            turnStartTime=millis();
+            while (500>millis()-turnStartTime){
+              digitalWrite(mf,LOW);
+              digitalWrite(mb,HIGH);
+            }
+            digitalWrite(mb,LOW);
+            digitalWrite(mf,HIGH);
           }
           else {
             analogWrite(me, speedTur);  // Enable motor
             turnleftBack();
             analogWrite(me, speedStr);  // Enable motor
-            if (turns==8 && lastOb=='r'){
+            if (turns==9 && lastOb=='r'){
               turnleft();
+              turns=turns-2;
               steeringServo.write(STRAIGHT_ANGLE);
               turnStartTime=millis();
               while (1250>millis()-turnStartTime){
@@ -333,13 +335,21 @@ void loop() {
             digitalWrite(mb,LOW);
             digitalWrite(mf,HIGH);
             turnright();
+            turnStartTime=millis();
+            while (500>millis()-turnStartTime){
+              digitalWrite(mf,LOW);
+              digitalWrite(mb,HIGH);
+            }
+            digitalWrite(mb,LOW);
+            digitalWrite(mf,HIGH);
           }
           else{
             analogWrite(me, speedTur);  // Enable motor
             turnrightBack();
             analogWrite(me, speedStr);  // Enable motor
-            if (turns==8 && lastOb=='r'){
+            if (turns==9 && lastOb=='r'){
               turnright();
+              turns=turns-2;
               steeringServo.write(STRAIGHT_ANGLE);
               turnStartTime=millis();
               while (1250>millis()-turnStartTime){
@@ -407,7 +417,8 @@ void loop() {
         midTurn=false;
         dontSense=false;
         state=setState;
-        lastOb='g';
+        if (turns==7)
+          lastOb='g';
       break;
       
       case dodgeRight:
@@ -467,7 +478,8 @@ void loop() {
         midTurn=false;
         dontSense=false;
         state=setState;
-        lastOb='r';
+        if (turns==7)
+          lastOb='r';
       break;
     }
     state=setState;
@@ -494,7 +506,7 @@ void loop() {
   forntthreshold=33;
   while (turns>=13){
     centerOffset=0;
-    colorWipe(strip.Color(0,255,0));
+    // colorWipe(strip.Color(0,255,0));
     long currenttime = millis();
     if (!midTurn) //pids off during dodges and turns
       forward();
@@ -504,7 +516,7 @@ void loop() {
     ld=distCalc(lt,le);
 
     pixy2.ccc.getBlocks();
-    if (pixy2.ccc.blocks[0].m_height> 43 && pixy2.ccc.blocks[0].m_height<pixy2.ccc.blocks[0].m_width && pixy2.ccc.numBlocks){ //height was 40 before just in case
+    if (pixy2.ccc.blocks[0].m_height> 45 && pixy2.ccc.blocks[0].m_height<pixy2.ccc.blocks[0].m_width && pixy2.ccc.numBlocks){ //height was 40 before just in case
       pState=park;
     }
 
@@ -515,22 +527,36 @@ void loop() {
           analogWrite(me, speedTur);  // Enable motor
           turnright();
           analogWrite(me, speedStr);  // Enable motor
+          turnStartTime=millis();
+          while (500>millis()-turnStartTime){
+            digitalWrite(mf,LOW);
+            digitalWrite(mb,HIGH);
+          }
+          digitalWrite(mb,LOW);
+          digitalWrite(mf,HIGH);
         }
       break;
 
       case leftP:
-        colorWipe(strip.Color(255,0,0));
+        // colorWipe(strip.Color(255,0,0));
         if(fd <= forntthreshold && !dontSense  && currenttime - prevtime >2000 && !pixy2.ccc.numBlocks){
-          colorWipe(strip.Color(255,255,255));
+          // colorWipe(strip.Color(255,255,255));
           analogWrite(me, speedTur);  // Enable motor
           turnleft();
           analogWrite(me, speedStr);  // Enable motor
+          turnStartTime=millis();
+          while (500>millis()-turnStartTime){
+            digitalWrite(mf,LOW);
+            digitalWrite(mb,HIGH);
+          }
+          digitalWrite(mb,LOW);
+          digitalWrite(mf,HIGH);
         }
       break;
 
       case park:
         dontSense=true;
-        colorWipe(strip.Color(255,0,0));
+        // colorWipe(strip.Color(255,0,0));
         if (setState == left){
 
           
@@ -547,7 +573,7 @@ void loop() {
             steeringServo.write(MAX_RIGHT-5);
           }
           turnStartTime=millis();
-          while (turnStartTime>millis()-(int)(turnDuration/1.75)){
+          while (turnStartTime>millis()-(int)(turnDuration/1.9)){
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
             steeringServo.write(MAX_LEFT);
@@ -577,7 +603,7 @@ void loop() {
             steeringServo.write(MAX_LEFT+5);
           }
           turnStartTime=millis();
-          while (turnStartTime>millis()-(int)(turnDuration/1.75)){
+          while (turnStartTime>millis()-(int)(turnDuration/1.9)){
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
             steeringServo.write(MAX_RIGHT);
@@ -714,10 +740,10 @@ void turnleft()
   updateTargetHeadingleft();
   dontSense = true;
   while(currentHeading >= (targetHeading+deviate)){
-    colorWipe(strip.Color(0,255,0));
+    // colorWipe(strip.Color(0,255,0));
     bno.getEvent(&event);
     currentHeading = event.orientation.x;
-    colorWipe(strip.Color(0,0,255));
+    // colorWipe(strip.Color(0,0,255));
     Serial.print("Heading: ");
     Serial.print(currentHeading);
     Serial.print("| servo position: ");
@@ -726,7 +752,7 @@ void turnleft()
     Serial.println(targetHeading-deviate);
   }
   steeringServo.write(STRAIGHT_ANGLE);
-  colorWipe(strip.Color(255,0,0));
+  // colorWipe(strip.Color(255,0,0));
   turns++;
   midTurn=false;
 }
