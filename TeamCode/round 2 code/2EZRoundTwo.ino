@@ -263,21 +263,18 @@ void loop() {
     switch(state){
       case str:
 
-        if (fd<(forntthreshold-10)){
-          while(state==str){
-            forward();
-            rd=distCalc(rt,re);
-            ld=distCalc(lt,le);
-            if(rd >= rightthreshold){
-              state=right;
-              setState=right;
-              pState=rightP;
-            }
-            if(ld >= leftthreshold){
-              state=left;
-              setState=left;
-              pState=leftP;
-            }
+        if (fd<(forntthreshold-15)){
+          rd=distCalc(rt,re);
+          ld=distCalc(lt,le);
+          if(rd >= rightthreshold){
+            state=right;
+            setState=right;
+            pState=rightP;
+          }
+          else if(ld >= leftthreshold){
+            state=left;
+            setState=left;
+            pState=leftP;
           }
         }
       break;
