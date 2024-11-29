@@ -52,6 +52,8 @@ const int ms = 6;    // Motor standby pin
 // PID control variables
 int echoD;
 
+int pleaseworkbno=0;
+
 float Kp = 4.0;                   // Proportional gain
 float Ki = 0.0;                   // Integral gain
 float Kd = 1.0;                   // Derivative gain
@@ -90,6 +92,7 @@ int speedTur =  160;  //100 works if no surprise rule, else 80
 // Target headings (0, 90, 180, 270)
 int targetHeading = 0;
 
+unsigned long turnStartTime2 = 0;
 unsigned long turnStartTime = 0;
 unsigned long turnDuration = 0;
 bool nextCorr=false;
@@ -97,6 +100,8 @@ char lastOb='g';
 bool joepapa = false;
 int centerOffset=0;
 bool didWeWait=false;
+bool didWeCali=false;
+
 
 
 //function to calculate the shortest turn direction
@@ -169,6 +174,10 @@ void setup() {
   pinMode(fe, INPUT);
   Serial.begin(115200); 
 
+  // setting up the servo
+  steeringServo.attach(SERVO_PIN);
+  steeringServo.write(STRAIGHT_ANGLE);  
+
   // initializing the BNO055 gyro sensor
   if (!bno.begin()) {
     Serial.println("BNO055 not detected. Check wiring!");
@@ -182,11 +191,7 @@ void setup() {
   strip.begin();
   strip.show();
   strip.setBrightness(BRIGHTNESS);
-  colorWipe(strip.Color(255,255,255));
-
-  // setting up the servo
-  steeringServo.attach(SERVO_PIN);
-  steeringServo.write(STRAIGHT_ANGLE);  
+  colorWipe(strip.Color(255,0,0));
 
   // setting up motor pins
   pinMode(mf, OUTPUT);
@@ -199,11 +204,19 @@ void setup() {
   // initialize motor state
   analogWrite(me, speedStr);  
   digitalWrite(mb, LOW);  
-  digitalWrite(mf, HIGH);  
+  // digitalWrite(mf, HIGH);  
   
 }
-
+uint8_t sys, gyro, accel, mag = 0;
 void loop() {
+
+  while(pleaseworkbno!=3){
+    
+    bno.getCalibration(&sys, &gyro, &accel, &mag);
+    pleaseworkbno=gyro;
+  }
+  colorWipe(strip.Color(255,255,255));
+
   while (turns<=12){
     long currenttime = millis(); //for pid and advanced delays
     
@@ -240,24 +253,22 @@ void loop() {
         centerOffset=0;
       }
     }
-    if (dontSense || midTurn){
+    if (dontSense || midTurn || (centerOffset!=0 && currenttime-prevtime>1000) || distCalc(ft,fe)<100){
       centerOffset=0;
     }
 
-    if (centerOffset!=0 && currenttime-prevtime>1000){
-      centerOffset=0;
-    }
-
-    if (turns==12 && rd<100 && ld<100 && fd<150 && !didWeWait && !midTurn && !dontSense){
-      turnStartTime=millis();
-      while (millis()-turnStartTime<5000){
-        digitalWrite(mf,LOW);
+    if (turns==12 && distCalc(rt,re)<100 && distCalc(lt,le)<100 && !didWeWait && !midTurn && !dontSense){ //&& currenttime-prevtime>3000
+      if (distCalc(ft,fe)<150){
+        turnStartTime=millis();
+        while (millis()-turnStartTime<5000){
+          digitalWrite(mf,LOW);
+          digitalWrite(mb,LOW);
+          //wait for 5 seconds after 3 laps done!
+        }
+        digitalWrite(mf,HIGH);
         digitalWrite(mb,LOW);
-        //wait for 5 seconds after 3 laps done!
+        didWeWait=true;
       }
-      digitalWrite(mf,HIGH);
-      digitalWrite(mb,LOW);
-      didWeWait=true;
     }
 
     switch(state){
@@ -312,6 +323,7 @@ void loop() {
                 digitalWrite(mb,HIGH);
               }
               digitalWrite(mb,LOW);
+              delay(250);
               digitalWrite(mf,HIGH);
               setState=right;
               pState=rightP;
@@ -354,6 +366,7 @@ void loop() {
                 digitalWrite(mb,HIGH);
               }
               digitalWrite(mb,LOW);
+              delay(250);
               digitalWrite(mf,HIGH);
               setState=left;
               pState=leftP;
@@ -500,7 +513,7 @@ void loop() {
 
 
  
-  forntthreshold=33;
+  forntthreshold=37;
   while (turns>=13){
     centerOffset=0;
     // colorWipe(strip.Color(0,255,0));
@@ -513,7 +526,7 @@ void loop() {
     ld=distCalc(lt,le);
 
     pixy2.ccc.getBlocks();
-    if (pixy2.ccc.blocks[0].m_height> 45 && pixy2.ccc.blocks[0].m_height<pixy2.ccc.blocks[0].m_width && pixy2.ccc.numBlocks){ //height was 40 before just in case
+    if (pixy2.ccc.blocks[0].m_height> 47 && pixy2.ccc.blocks[0].m_height<pixy2.ccc.blocks[0].m_width && pixy2.ccc.numBlocks){ //height was 40 before just in case
       pState=park;
     }
 
@@ -530,6 +543,7 @@ void loop() {
             digitalWrite(mb,HIGH);
           }
           digitalWrite(mb,LOW);
+          delay(250);
           digitalWrite(mf,HIGH);
         }
       break;
@@ -547,6 +561,7 @@ void loop() {
             digitalWrite(mb,HIGH);
           }
           digitalWrite(mb,LOW);
+          delay(250);
           digitalWrite(mf,HIGH);
         }
       break;
@@ -567,10 +582,10 @@ void loop() {
 
           turnStartTime=millis();
           while (turnStartTime>millis()-(turnDuration/1.75)){
-            steeringServo.write(MAX_RIGHT-5);
+            steeringServo.write(MAX_RIGHT);
           }
           turnStartTime=millis();
-          while (turnStartTime>millis()-(int)(turnDuration/1.9)){
+          while (turnStartTime>millis()-(int)(turnDuration/1.83)){
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
             steeringServo.write(MAX_LEFT);
@@ -597,10 +612,10 @@ void loop() {
 
           turnStartTime=millis();
           while (turnStartTime>millis()-(turnDuration/1.75)){
-            steeringServo.write(MAX_LEFT+5);
+            steeringServo.write(MAX_LEFT);
           }
           turnStartTime=millis();
-          while (turnStartTime>millis()-(int)(turnDuration/1.9)){
+          while (turnStartTime>millis()-(int)(turnDuration/1.83)){
             digitalWrite(mf,LOW);
             digitalWrite(mb,HIGH);
             steeringServo.write(MAX_RIGHT);
@@ -723,8 +738,9 @@ void turnrightBack()
       if(!uturn){
         turns++;
         }
-    delay(650);
+    delay(400);
   digitalWrite(mb,LOW);
+  delay(300);
   digitalWrite(mf,HIGH);
   midTurn=false;
 }
@@ -778,9 +794,10 @@ void turnleftBack()
   }
   steeringServo.write(STRAIGHT_ANGLE);
   turns++;
-  delay(650);
-  digitalWrite(mf,HIGH);
+  delay(400);
   digitalWrite(mb,LOW);
+  delay(300);
+  digitalWrite(mf,HIGH);
   midTurn=false;
 }
 
@@ -795,7 +812,7 @@ void forward(){
   bno.getEvent(&event);
   currentHeading = event.orientation.x;
   error = calculateAngleError(targetHeading, currentHeading);
-  // if (turns>12) error+=5; // for drift, it might mess stuff up tho
+  // if (turns>12) error-=5; // for drift, it might mess stuff up tho
   error += centerOffset; // for staying in center
   integral += error;
   derivative = error - previousError;
